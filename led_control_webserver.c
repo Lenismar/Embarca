@@ -15,7 +15,7 @@
 
 absolute_time_t ultima_alteracao_botao;
 
-// 🔽 Função simples para calcular a direção
+//  Função simples para calcular a direção
 const char* obter_direcao_simples(uint16_t x, uint16_t y) {
     const int centro = 2048;
     const int margem = 700;
@@ -63,7 +63,7 @@ static err_t servidor_tcp_receber(void *arg, struct tcp_pcb *conexao, struct pbu
     adc_select_input(1);
     uint16_t y_atual = adc_read();
 
-    // 🔽 Calcula direção
+    // Calcula direção
     const char* direcao = obter_direcao_simples(x_atual, y_atual);
 
     // Leitura direta do botão com lógica invertida (ativo-baixo)
