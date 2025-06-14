@@ -12,7 +12,7 @@
 #define SENHA_WIFI "pi1jgg6t"
 #define PINO_BOTAO 6
 
-// Função para calcular a direção
+// Função para calcular a direção do joystick
 const char* obter_direcao_simples(uint16_t x, uint16_t y) {
     const int centro = 2048;
     const int margem = 700;
@@ -56,12 +56,12 @@ static err_t servidor_tcp_receber(void *arg, struct tcp_pcb *conexao, struct pbu
     // Calcula direção
     const char* direcao = obter_direcao_simples(x_atual, y_atual);
 
-    // Leitura direta 
+    // Leitura direta do botão 
     bool pressionado = gpio_get(PINO_BOTAO) == 0;
     const char* estado_botao = pressionado ? "Pressionado" : "Solto";
     printf("Estado do botão: %s\n", estado_botao);
 
-    
+    // HTML para acompanhar os estados do sistema
     char html[1024];
     snprintf(
         html,
@@ -106,7 +106,7 @@ static err_t servidor_tcp_aceitar(void *arg, struct tcp_pcb *nova_conexao, err_t
 int main() {
     stdio_init_all();
 
-    // Configura botão 
+    // Configura botão pull-up interno
     gpio_init(PINO_BOTAO);
     gpio_set_dir(PINO_BOTAO, GPIO_IN);
     gpio_pull_up(PINO_BOTAO);
