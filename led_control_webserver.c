@@ -11,11 +11,8 @@
 #define NOME_REDE_WIFI "brisa-580702"
 #define SENHA_WIFI "pi1jgg6t"
 #define PINO_BOTAO 6
-#define TEMPO_DEBOUNCE_MS 30  // tempo de debounce
 
-absolute_time_t ultima_alteracao_botao;
-
-//  Função simples para calcular a direção
+// Função simples para calcular a direção
 const char* obter_direcao_simples(uint16_t x, uint16_t y) {
     const int centro = 2048;
     const int margem = 700;
@@ -31,18 +28,6 @@ const char* obter_direcao_simples(uint16_t x, uint16_t y) {
     return "Centro";
 }
 
-// Interrupção com debounce (opcional)
-void tratador_interrupcao_botao(uint gpio, uint32_t eventos) {
-    if (gpio == PINO_BOTAO) {
-        absolute_time_t agora = get_absolute_time();
-        int64_t diferenca_ms = absolute_time_diff_us(ultima_alteracao_botao, agora) / 1000;
-        if (diferenca_ms >= TEMPO_DEBOUNCE_MS) {
-            ultima_alteracao_botao = agora;
-            // Nenhuma ação aqui — a leitura será feita diretamente
-        }
-    }
-}
-
 // Processa a requisição HTTP
 static err_t servidor_tcp_receber(void *arg, struct tcp_pcb *conexao, struct pbuf *pacote, err_t err) {
     if (!pacote) {
@@ -52,6 +37,11 @@ static err_t servidor_tcp_receber(void *arg, struct tcp_pcb *conexao, struct pbu
     }
 
     char *requisicao = (char *)malloc(pacote->len + 1);
+    if (!requisicao) {
+        pbuf_free(pacote);
+        return ERR_MEM;
+    }
+
     memcpy(requisicao, pacote->payload, pacote->len);
     requisicao[pacote->len] = '\0';
 
@@ -120,13 +110,6 @@ int main() {
     gpio_init(PINO_BOTAO);
     gpio_set_dir(PINO_BOTAO, GPIO_IN);
     gpio_pull_up(PINO_BOTAO);
-
-    ultima_alteracao_botao = get_absolute_time();
-
-    // Configura interrupção com debounce
-    gpio_set_irq_enabled_with_callback(PINO_BOTAO,
-        GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL,
-        true, &tratador_interrupcao_botao);
 
     // Inicia Wi-Fi
     if (cyw43_arch_init()) {
